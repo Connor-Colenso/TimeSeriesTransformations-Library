@@ -7,7 +7,6 @@ bool test(double in, double in2) {
 }
 
 TEST(TimeSeriesTransformations, loadFileExaminationFile) {
-
     // Load file.
     TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\Problem3_DATA.csv");
 
@@ -22,9 +21,9 @@ TEST(TimeSeriesTransformations, loadFileExaminationFile) {
     EXPECT_EQ(v.time_vector[vector_length-1], 1669115010);
 
     // Alternative constructor.
-    std::vector<int> time_vec = { 1,2,3,4 };
-    std::vector<double> price_vec = { 100,110,120,110 };
-    
+    std::vector<int> time_vec = { 1, 2, 3, 4 };
+    std::vector<double> price_vec = { 100, 110, 120, 110 };
+
     TimeSeriesTransformations v1(time_vec, price_vec);
 
     EXPECT_EQ(v1.time_vector, time_vec);
@@ -43,7 +42,7 @@ TEST(TimeSeriesTransformations, meanOfExaminationFile) {
 
 TEST(TimeSeriesTransformations, standardDeviationOfExaminationFile) {
     TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\Problem3_DATA.csv");
-    
+
     // Create ptr to double and pass through standardDeviation function.
     double sd_output;
     v.standardDeviation(&sd_output);
@@ -61,7 +60,7 @@ TEST(TimeSeriesTransformations, incrementMeanOfExaminationFile) {
     EXPECT_NEAR(mean_output, 0.0029068986898690904, 10e-6);
 
     // Second test. Ensures ordered state.
-    TimeSeriesTransformations v_1({1,5,4,2,3}, { 1,5,4,2,3 });
+    TimeSeriesTransformations v_1({ 1, 5, 4, 2, 3 }, { 1, 5, 4, 2, 3 });
     double mean_output_1;
     v_1.computeIncrementMean(&mean_output_1);
 
@@ -78,7 +77,7 @@ TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
     EXPECT_NEAR(sd_output, 40.35944404799585, 10e-6);
 
     // Second test. Ensures ordered state.
-    TimeSeriesTransformations v_1({ 1,5,4,2,3 }, { 1,5,4,2,3 });
+    TimeSeriesTransformations v_1({ 1, 5, 4, 2, 3 }, { 1, 5, 4, 2, 3 });
     double sd_output_1;
     v_1.computeIncrementStandardDeviation(&sd_output_1);
 
@@ -87,8 +86,7 @@ TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
 
 // test files with no data;
 
-TEST(TimeSeriesTransformations, meanOfEmptyFileWithHeader)
-{
+TEST(TimeSeriesTransformations, meanOfEmptyFileWithHeader) {
     TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\empty_with_header.csv");
     double mean_output;
     EXPECT_EQ(v.mean(&mean_output), false);
@@ -111,7 +109,7 @@ TEST(TimeSeriesTransformations, incrementMeanOfEmptyFileWithHeader) {
 }
 
 TEST(TimeSeriesTransformations, incrementMeanUnorderedFileWithData) {
-    TimeSeriesTransformations v({ 4,1,2,3 }, {1,2,3,4} );
+    TimeSeriesTransformations v({ 4, 1, 2, 3 }, { 1, 2, 3, 4 });
 
     double mean_output;
     EXPECT_EQ(v.computeIncrementMean(&mean_output), true);
@@ -143,7 +141,7 @@ TEST(TimeSeriesTransformations, throwRunTimeFromFileDoesNotExist) {
 
 //--------------- Test build a TimeSeriesTransformation from vectors
 TEST(TimeSeriesTransformations, buildFromTSTFromFullEqualTimePriceVectors) {
-    TimeSeriesTransformations v({ 10,20,30 }, { 1,2,3 });
+    TimeSeriesTransformations v({ 10, 20, 30 }, { 1, 2, 3 });
 
     EXPECT_EQ(v.time_vector[0], 10);
     EXPECT_EQ(v.time_vector[1], 20);
@@ -155,12 +153,12 @@ TEST(TimeSeriesTransformations, buildFromTSTFromFullEqualTimePriceVectors) {
 }
 
 TEST(TimeSeriesTransformations, throwRuntimeErrorFromTSTWithUnequalTimePriceVectors) {
-    EXPECT_THROW(TimeSeriesTransformations v({ 10,20,30 }, { 1,2 }), std::runtime_error);
+    EXPECT_THROW(TimeSeriesTransformations v({ 10, 20, 30 }, { 1, 2 }), std::runtime_error);
 }
 
 // Check getPriceAtDate
 TEST(TimeSeriesTransformations, getAPriceAtADateThatExists) {
-    TimeSeriesTransformations v({ 1, 86400, 86401 }, { 9,5,1 });
+    TimeSeriesTransformations v({ 1, 86400, 86401 }, { 9, 5, 1 });
 
     double value = 0;
     EXPECT_TRUE(v.getPriceAtDate("1970-01-01 00:00:01", &value));
@@ -168,7 +166,7 @@ TEST(TimeSeriesTransformations, getAPriceAtADateThatExists) {
 }
 
 TEST(TimeSeriesTransformations, getAPriceAtADateThatDoesNotExist) {
-    TimeSeriesTransformations v({ 1, 86400, 86401 }, { 9,5,1 });
+    TimeSeriesTransformations v({ 1, 86400, 86401 }, { 9, 5, 1 });
 
     double value = 0;
     EXPECT_FALSE(v.getPriceAtDate("1970-01-01 00:00:02", &value));
@@ -218,7 +216,7 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
 
 // Test find greatestincrements
 TEST(TimeSeriesTransformations, findGreatestIncrementsWithData) {
-    TimeSeriesTransformations v({ 10, 20, 30, 40, 86401 }, { 1,100,3,4,100000 });
+    TimeSeriesTransformations v({ 10, 20, 30, 40, 86401 }, { 1, 100, 3, 4, 100000 });
 
     double price;
     std::string date = "1970-01-01 00:00:00";
@@ -279,33 +277,31 @@ TEST(TimeSeriesTransformations, removeEntryThatHasNeverExisted) {
 
 // removePricesGreaterThan
 TEST(TimeSeriesTransformations, removePricesGreaterThan) {
-    TimeSeriesTransformations v({ 10,20,30,40,50 }, { 7,7,4,3,9 });
+    TimeSeriesTransformations v({ 10, 20, 30, 40, 50 }, { 7, 7, 4, 3, 9 });
     v.removePricesGreaterThan(5);
 
-    EXPECT_EQ(v.price_vector[0], 4 );
-    EXPECT_EQ(v.time_vector[0], 30 );
+    EXPECT_EQ(v.price_vector[0], 4);
+    EXPECT_EQ(v.time_vector[0], 30);
 
     EXPECT_EQ(v.price_vector[1], 3);
     EXPECT_EQ(v.time_vector[1], 40);
-
 }
 
 // removePricesLessThan
 TEST(TimeSeriesTransformations, removePricesLessThan) {
-    TimeSeriesTransformations v({ 10,20,30,40,50 }, { 1,2,6,7,3 });
+    TimeSeriesTransformations v({ 10, 20, 30, 40, 50 }, { 1, 2, 6, 7, 3 });
     v.removePricesLowerThan(5);
 
-    EXPECT_EQ(v.price_vector[0], 6 );
-    EXPECT_EQ(v.time_vector[0], 30 );
+    EXPECT_EQ(v.price_vector[0], 6);
+    EXPECT_EQ(v.time_vector[0], 30);
 
     EXPECT_EQ(v.price_vector[1], 7);
     EXPECT_EQ(v.time_vector[1], 40);
 }
 
 // removePricesBefore
-TEST(TimeSeriesTransformations, removePricesBefore) 
-{
-    TimeSeriesTransformations v({ 10,20,30,40,50 }, { 1,2,3,4,5 });
+TEST(TimeSeriesTransformations, removePricesBefore) {
+    TimeSeriesTransformations v({ 10, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5 });
     v.removePricesBefore("1970-01-01 00:00:11");
 
     EXPECT_EQ(v.price_vector[0], 2);
@@ -313,18 +309,16 @@ TEST(TimeSeriesTransformations, removePricesBefore)
 }
 
 // removePricesAfter
-TEST(TimeSeriesTransformations, removePricesAfter) 
-{
-    TimeSeriesTransformations v({ 10,20,30,40,50 }, { 1,2,3,4,5 });
+TEST(TimeSeriesTransformations, removePricesAfter) {
+    TimeSeriesTransformations v({ 10, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5 });
     v.removePricesAfter("1970-01-01 00:00:11");
 
     EXPECT_EQ(v.price_vector[0], 1);
     EXPECT_EQ(v.time_vector[0], 10);
 }
 
-TEST(TimeSeriesTransformations, removePricesAfterAndBefore) 
-{
-    TimeSeriesTransformations v({ 10,20,30,40,50 }, { 1,2,3,4,5 });
+TEST(TimeSeriesTransformations, removePricesAfterAndBefore) {
+    TimeSeriesTransformations v({ 10, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5 });
     v.removePricesBefore("1970-01-01 00:00:11");
     v.removePricesAfter("1970-01-01 00:00:41");
 
@@ -332,7 +326,7 @@ TEST(TimeSeriesTransformations, removePricesAfterAndBefore)
     EXPECT_EQ(v.time_vector[0], 20);
 }
 
-// This is used to check your print methods output the correct number of 
+// This is used to check your print methods output the correct number of
 int countNewLines(std::string s) {
     int count = 0;
     for (const auto& i : s) {
@@ -346,7 +340,7 @@ int countNewLines(std::string s) {
 // print days
 TEST(TimeSeriesTransformations, printPricesOnDay) {
     // Recall that there are 86400 seconds in a day.
-    TimeSeriesTransformations v({ 10, 20, 30, 86399, 86400, 86400+10, 86400+20, 86400*2, 86400*2+10, 86400*2+20 }, { 1,2,3,4,5,6,7,8,9,10 });
+    TimeSeriesTransformations v({ 10, 20, 30, 86399, 86400, 86400+10, 86400+20, 86400*2, 86400*2+10, 86400*2+20 }, { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 
     int number_of_lines = 0;
     std::string output_string = v.printSharePricesOnDate("1970-01-02");
@@ -357,7 +351,7 @@ TEST(TimeSeriesTransformations, printPricesOnDay) {
 }
 
 TEST(TimeSeriesTransformations, printPricesOnDayExactDayBoundary) {
-    TimeSeriesTransformations v({1, 86400, 86401}, { 1,2,3 });
+    TimeSeriesTransformations v({1, 86400, 86401}, { 1, 2, 3 });
 
     double value = 0;
     v.getPriceAtDate("1970-01-02", &value);
@@ -367,7 +361,7 @@ TEST(TimeSeriesTransformations, printPricesOnDayExactDayBoundary) {
 
 // print days prices
 TEST(TimeSeriesTransformations, printPricesOnDayThatDoesntExist) {
-    TimeSeriesTransformations v({ 86401, 86402, 86403 }, { 1,2,3 });
+    TimeSeriesTransformations v({ 86401, 86402, 86403 }, { 1, 2, 3 });
     std::string output_prices = v.printSharePricesOnDate("1970-01-01");
 
     EXPECT_EQ(countNewLines(output_prices), 0);
@@ -375,15 +369,15 @@ TEST(TimeSeriesTransformations, printPricesOnDayThatDoesntExist) {
 
 // print days incrementPrices
 TEST(TimeSeriesTransformations, printIncrementPricesOnDay) {
-    TimeSeriesTransformations v({ 1, 2, 3, 86401 }, { 1,2,3,4 });
+    TimeSeriesTransformations v({ 1, 2, 3, 86401 }, { 1, 2, 3, 4 });
     std::string output_prices = v.printIncrementsOnDate("1970-01-01");
 
     EXPECT_EQ(countNewLines(output_prices), 2);
 }
 
 
-TEST(TimeSeriesTransformations, printIncrementPricesOnDayExactDayBoundary) { //??? Shouldn't this be a special function?
-    TimeSeriesTransformations v({ 1, 2, 3, 86400 }, { 1,2,1,100 });
+TEST(TimeSeriesTransformations, printIncrementPricesOnDayExactDayBoundary) {
+    TimeSeriesTransformations v({ 1, 2, 3, 86400 }, { 1, 2, 1, 100 });
     std::string output_prices = v.printIncrementsOnDate("1970-01-02");
 
     EXPECT_EQ(countNewLines(output_prices), 1);
@@ -391,14 +385,14 @@ TEST(TimeSeriesTransformations, printIncrementPricesOnDayExactDayBoundary) { //?
 
 // print days
 TEST(TimeSeriesTransformations, printIncrementPricesOnDayThatDoesntExist) {
-    TimeSeriesTransformations v({ 1, 2, 3, 86401 }, { 1,2,3,4 });
+    TimeSeriesTransformations v({ 1, 2, 3, 86401 }, { 1, 2, 3, 4 });
     std::string output_prices = v.printIncrementsOnDate("1970-02-27");
 
     EXPECT_EQ(countNewLines(output_prices), 0);
 }
 
 TEST(TimeSeriesTransformations, printPricesOnTrickyDay) {
-    TimeSeriesTransformations v({ 86401, 86402, 86403 }, { 1,2,3 });
+    TimeSeriesTransformations v({ 86401, 86402, 86403 }, { 1, 2, 3 });
 
     EXPECT_THROW(v.printSharePricesOnDate("1970-02-31"), std::invalid_argument);
     EXPECT_THROW(v.printSharePricesOnDate("1970-02-31 00:00:00"), std::invalid_argument);
