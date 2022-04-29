@@ -26,7 +26,7 @@ std::vector<double> vectorDiff(std::vector<double> v) {
 }
 
 // Convert human readable date to unix epoch timestamp.
-bool StringDateToUnix(std::string date, int* unix_epoch) {
+bool stringDateToUnix(std::string date, int* unix_epoch) {
     std::tm t{};
     std::istringstream string_stream(date);
 
@@ -45,7 +45,7 @@ bool StringDateToUnix(std::string date, int* unix_epoch) {
 }
 
 // Convert unix epoch timestamp to a readable date format.
-std::string UnixEpochToString(int input_time) {
+std::string unixEpochToString(int input_time) {
     struct tm* timeinfo;
     time_t epoch_time = input_time;
     timeinfo = gmtime(&epoch_time);
@@ -58,9 +58,9 @@ std::string UnixEpochToString(int input_time) {
 // Check if a date is valid.
 bool IsDateValid(std::string date) {
     int unix_epoch;
-    StringDateToUnix(date, &unix_epoch);
+    stringDateToUnix(date, &unix_epoch);
 
-    std::string comparison_date = UnixEpochToString(unix_epoch);
+    std::string comparison_date = unixEpochToString(unix_epoch);
 
     if (comparison_date == date) {
         return true;
@@ -204,7 +204,7 @@ bool TimeSeriesTransformations::standardDeviation(double* standardDeviationValue
 
 // Calculate mean of diff of price.
 bool TimeSeriesTransformations::computeIncrementMean(double* meanValue) const {
-    if ((price_vector.size() == 0) || (time_vector.size() == 0)) {
+    if (internal_set.size() <= 1) {
         *meanValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
@@ -220,7 +220,7 @@ bool TimeSeriesTransformations::computeIncrementMean(double* meanValue) const {
 
 // Calculate SD of diff of price.
 bool TimeSeriesTransformations::computeIncrementStandardDeviation(double* standardDeviationValue) const {
-    if ((price_vector.size() == 0) || (time_vector.size() == 0)) {
+    if (internal_set.size() <= 1) {
         *standardDeviationValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
@@ -236,7 +236,7 @@ bool TimeSeriesTransformations::computeIncrementStandardDeviation(double* standa
 
 void TimeSeriesTransformations::addASharePrice(std::string datetime, double price) {
     int unix_epoch_time;
-    if ((!StringDateToUnix(datetime, &unix_epoch_time)) || !IsDateValid(datetime)) {
+    if ((!stringDateToUnix(datetime, &unix_epoch_time)) || !IsDateValid(datetime)) {
         throw std::invalid_argument("Date " + datetime + " cannot be parsed.");
     }
 
@@ -255,7 +255,7 @@ void TimeSeriesTransformations::addASharePrice(std::string datetime, double pric
 
 bool TimeSeriesTransformations::removeEntryAtTime(std::string time) {
     int unix_epoch_time;
-    if ((!StringDateToUnix(time, &unix_epoch_time)) || !IsDateValid(time)) {
+    if ((!stringDateToUnix(time, &unix_epoch_time)) || !IsDateValid(time)) {
         return false;
     }
 
@@ -334,7 +334,7 @@ bool TimeSeriesTransformations::removePricesLowerThan(double price) {
 
 bool TimeSeriesTransformations::removePricesBefore(std::string date) {
     int unix_epoch_time;
-    if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+    if ((!stringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
         return false;
     }
 
@@ -363,7 +363,7 @@ bool TimeSeriesTransformations::removePricesBefore(std::string date) {
 
 bool TimeSeriesTransformations::removePricesAfter(std::string date) {
     int unix_epoch_time;
-    if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+    if ((!stringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
         return false;
     }
 
@@ -394,7 +394,7 @@ std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) 
     std::string truncated_date = std::string(date.begin(), date.begin() + 10);
     int unix_epoch_time;
     // I'm deliberately leaving IsDateValid with date so it will still error if you put in an invalid date.
-    if ((!StringDateToUnix(truncated_date, &unix_epoch_time)) || !IsDateValid(date)) {
+    if ((!stringDateToUnix(truncated_date, &unix_epoch_time)) || !IsDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
     }
 
@@ -403,7 +403,7 @@ std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) 
     v.removePricesBefore(date);
 
     // Recall that 86400 seconds in a day and removePricesAfter retains the passed in date (hence 86400-1).
-    v.removePricesAfter(UnixEpochToString(unix_epoch_time+86400-1));
+    v.removePricesAfter(unixEpochToString(unix_epoch_time+86400-1));
 
     std::string string_of_prices = "";
 
@@ -416,7 +416,7 @@ std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) 
 
 bool TimeSeriesTransformations::getPriceAtDate(const std::string date, double* value) const {
     int unix_epoch_time;
-    if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+    if ((!stringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
         *value = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
@@ -445,12 +445,8 @@ std::string TimeSeriesTransformations::printIncrementsOnDate(std::string date) c
     return v.printSharePricesOnDate(date);
 }
 
-bool cmp(std::pair<int, double> A, std::pair<int, double> B) {
-    return A.second < B.second;
-}
-
 bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double* price_increment) const {
-    if ((price_vector.size() <= 1) && (time_vector.size() <= 1)) {
+    if (internal_set.size() <= 1) {
         *price_increment = std::numeric_limits<double>::quiet_NaN();
         *date = "";
         return false;
@@ -460,13 +456,12 @@ bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double
     std::vector<std::pair<int, double>> tmp_vector;
 
     for (int i = 0; i < increments.size(); i++) {
-        tmp_vector.push_back({time_vector[i+1], increments[i]});
+        tmp_vector.push_back({time_vector[(int64_t)(i)+1], increments[i]});
     }
 
-    auto pair = std::max_element(tmp_vector.begin(), tmp_vector.begin(), [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-    std::cout << "test";
-    *date = UnixEpochToString(pair->first);
-    *price_increment = pair->second;
+    auto pair = *std::max_element(tmp_vector.begin(), tmp_vector.begin(), [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+    *date = unixEpochToString(pair.first);
+    *price_increment = pair.second;
     return true;
 }
 
@@ -475,7 +470,7 @@ std::string TimeSeriesTransformations::getName() const {
 }
 
 int TimeSeriesTransformations::count() const {
-    return static_cast<int>(this->price_vector.size());
+    return static_cast<int>(internal_set.size());
 }
 
 char TimeSeriesTransformations::getSeparator() const {

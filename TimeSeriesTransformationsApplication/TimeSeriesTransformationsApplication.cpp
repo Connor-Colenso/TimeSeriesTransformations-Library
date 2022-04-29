@@ -9,5 +9,6 @@
 #include "..\TimeSeriesTransformations\TimeSeriesTransformations.h"
 
 int main() {
-	std::cout << 2 << std::endl;
+	// I don't really see why I would need this given we have test.cpp
+	std::cout << "Application that does nothing." << std::endl;
 }
