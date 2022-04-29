@@ -77,26 +77,17 @@ struct sorting_struct {
  */
 
 class TimeSeriesTransformations {
- public:
+public:
+    // Constructors
     TimeSeriesTransformations();
-
-     std::vector<int> time_vector;
-     std::vector<double> price_vector;
-
-    // Probably have an option to state whether there a header in csv file,
-    // or you could detect and ignore.
     explicit TimeSeriesTransformations(const std::string & filenameandpath);
-
     TimeSeriesTransformations(const std::vector<int>& time, const std::vector<double>& price, std::string name = "");
-
-    //// Copy Constructor
     TimeSeriesTransformations(const TimeSeriesTransformations& t);
 
-    //// Assignment Operator
+    // Operator overloads.
     TimeSeriesTransformations& operator=(const TimeSeriesTransformations& t);
-
-    //// equality Operator
     bool operator== (const TimeSeriesTransformations& t) const;
+
     bool mean(double* meanValue) const;
     bool standardDeviation(double* standardDeviationValue) const;
     bool computeIncrementMean(double* meanValue) const;
@@ -114,11 +105,22 @@ class TimeSeriesTransformations {
     void saveData(std::string filename) const;
     int count() const;
     std::string getName() const;
-    char getSeparator() const;
 
- private:
+    // You can manually set the separator and getSeparator will return this. This is kinda redundant code though and
+    // as discussed should've probably allowed us to pass in separator as an optional argument in the constructors.
+    char getSeparator() const;
+    char separator = ',';
+
+    std::vector<int> getTimeVector() const;
+    std::vector<double> getPriceVector() const;
+
+private:
     const int decimalPlaces = 5;
     std::string name = "";
+
+    // These are not the main method of storage btu useful to prebuild for getTimeVector and getPriceVector.
+    std::vector<int> time_vector;
+    std::vector<double> price_vector;
 
     // This is really handy as it automatically sorts itself.
     std::set<std::pair<int, double>, sorting_struct> internal_set;

@@ -336,6 +336,8 @@ bool TimeSeriesTransformations::removePricesBefore(std::string date) {
 
     std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
 
+    bool is_element_removed = false;
+
     price_vector.clear();
     time_vector.clear();
 
@@ -344,14 +346,15 @@ bool TimeSeriesTransformations::removePricesBefore(std::string date) {
             tmp_internal_set.insert({ pair.first, pair.second });
 
             time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second);
+            price_vector.push_back(pair.second); // ??? If element is not removed return false.
+            is_element_removed = true;
         }
     }
 
     internal_set = tmp_internal_set;
     tmp_internal_set.clear();
 
-    return true;
+    return is_element_removed;
 }
 
 bool TimeSeriesTransformations::removePricesAfter(std::string date) {
@@ -381,7 +384,6 @@ bool TimeSeriesTransformations::removePricesAfter(std::string date) {
 }
 
 std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) const {
-    // ??? Should this throw an error or "".
     int unix_epoch_time;
     if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
@@ -391,7 +393,7 @@ std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) 
 
     v.removePricesBefore(date);
 
-    // Recall that 86400 seconds in a day.
+    // Recall that 86400 seconds in a day and removePricesAfter retains the passed in date (hence 86400-1).
     v.removePricesAfter(UnixEpochToString(unix_epoch_time+86400-1));
 
     std::string string_of_prices = "";
@@ -456,7 +458,7 @@ bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double
 }
 
 std::string TimeSeriesTransformations::getName() const {
-    return this->name;
+    return name;
 }
 
 int TimeSeriesTransformations::count() const {
@@ -464,20 +466,29 @@ int TimeSeriesTransformations::count() const {
 }
 
 char TimeSeriesTransformations::getSeparator() const {
-    return ',';
+    return separator;
 }
 
 void TimeSeriesTransformations::saveData(std::string filename) const {
     std::ofstream new_csv;
 
-    new_csv.open(filename + ".csv");
+    new_csv.open(filename);
 
     if (new_csv.is_open()) {
+        // Adds header to csv.
         new_csv << "TIMESTAMP," << name << std::endl;
 
         for (const auto& pair : internal_set) {
-            new_csv << pair.first << ',' << pair.second << std::endl;
+            new_csv << pair.first << separator << pair.second << std::endl;
         }
         new_csv.close();
     }
+}
+
+std::vector<double> TimeSeriesTransformations::getPriceVector() const {
+    return price_vector;
+}
+
+std::vector<int> TimeSeriesTransformations::getTimeVector() const {
+    return time_vector;
 }
