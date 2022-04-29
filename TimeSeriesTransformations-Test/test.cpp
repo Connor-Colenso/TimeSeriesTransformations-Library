@@ -192,7 +192,20 @@ TEST(TimeSeriesTransformations, checkAssignmentAndEqualityOperator) {
 
 // Test Save function
 TEST(TimeSeriesTransformations, checkSaveFunctionality) {
-    EXPECT_TRUE(false);
+    TimeSeriesTransformations v_1("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\Problem3_DATA.csv");
+
+    v_1.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\TEST_SAVE");
+
+    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\TEST_SAVE.csv");
+    // Check start value.
+    EXPECT_NEAR(v.price_vector[0], 61.43814, 10e-5);
+    EXPECT_EQ(v.time_vector[0], 1619120010);
+
+    int vector_length = static_cast<int>(v.price_vector.size());
+
+    // Check end value.
+    EXPECT_NEAR(v.price_vector[vector_length - 1], 90.50422, 10e-5);
+    EXPECT_EQ(v.time_vector[vector_length - 1], 1669115010);
 }
 
 // Test find greatestincrements
@@ -383,3 +396,5 @@ TEST(TimeSeriesTransformations, printPricesOnTrickyDay) {
     EXPECT_THROW(v.printSharePricesOnDate("1970-02-31"), std::invalid_argument);
     EXPECT_THROW(v.printSharePricesOnDate("1970-02-31 00:00:00"), std::invalid_argument);
 }
+
+

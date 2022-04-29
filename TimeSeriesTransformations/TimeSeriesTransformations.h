@@ -111,7 +111,7 @@ class TimeSeriesTransformations {
     std::string printIncrementsOnDate(std::string date) const;
     bool findGreatestIncrements(std::string* date, double* price_increment) const;
     bool getPriceAtDate(const std::string date, double* value) const;
-    //void saveData(std::string filename) const;
+    void saveData(std::string filename) const;
     int count() const;
     std::string getName() const;
     char getSeparator() const;

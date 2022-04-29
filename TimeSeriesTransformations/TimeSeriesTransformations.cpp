@@ -12,6 +12,7 @@
 #include <limits>
 #include <stdlib.h>
 #include <chrono>
+#include <time.h>
 #include "TimeSeriesTransformations.h"
 
 // Helper functions.
@@ -39,7 +40,7 @@ bool StringDateToUnix(std::string date, int* unix_epoch) {
 
 	// I am going to cast this to an int for simplicity sake given this program
 	// being used beyond 2038 seems rather unlikely.
-	*unix_epoch = (int)mktime(&t);
+	*unix_epoch = (int) mktime(&t);
 
 	return true;
 }
@@ -461,4 +462,19 @@ int TimeSeriesTransformations::count() const {
 
 char TimeSeriesTransformations::getSeparator() const {
 	return ',';
+}
+
+void TimeSeriesTransformations::saveData(std::string filename) const {
+	std::ofstream new_csv;
+
+	new_csv.open(filename + ".csv");
+
+	if (new_csv.is_open()) {
+		new_csv << "TIMESTAMP," << name << std::endl;
+
+		for (const auto& pair : internal_set) {
+			new_csv << pair.first << ',' << pair.second << std::endl;
+		}
+		new_csv.close();
+	}
 }
