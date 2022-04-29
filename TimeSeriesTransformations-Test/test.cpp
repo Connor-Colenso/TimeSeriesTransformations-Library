@@ -216,7 +216,7 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
     // Check custom names.
     TimeSeriesTransformations v_3({ 1, 2, 3 }, { 10, 20, 30 }, "APPL");
     v_3.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\APPL_SAVE.csv");
-    
+
     TimeSeriesTransformations v_4("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\APPL_SAVE.csv");
     EXPECT_EQ(v_4.getPriceVector()[0], 10);
     EXPECT_EQ(v_4.getPriceVector()[1], 20);
