@@ -112,9 +112,10 @@ TEST(TimeSeriesTransformations, incrementMeanOfEmptyFileWithHeader) {
 
 TEST(TimeSeriesTransformations, incrementMeanUnorderedFileWithData) {
     TimeSeriesTransformations v({ 4,1,2,3 }, {1,2,3,4} );
+
     double mean_output;
-    EXPECT_EQ(v.mean(&mean_output), true);
-    EXPECT_EQ(mean_output, 2.5);
+    EXPECT_EQ(v.computeIncrementMean(&mean_output), true);
+    EXPECT_NEAR(mean_output, -1.0/3.0, 10e-6);
 }
 
 TEST(TimeSeriesTransformations, incrementStandardDeviationEmptyFileWithHeader) {
@@ -362,7 +363,6 @@ TEST(TimeSeriesTransformations, printPricesOnDayExactDayBoundary) {
     v.getPriceAtDate("1970-01-02", &value);
 
     EXPECT_EQ(value, 2);
-
 }
 
 // print days prices
