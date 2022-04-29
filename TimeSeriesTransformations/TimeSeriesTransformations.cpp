@@ -1,5 +1,7 @@
 // TimeSeriesTransformations.cpp : Defines the functions for the static library.
 #define _CRT_SECURE_NO_WARNINGS
+#include <stdlib.h>
+#include <time.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,8 +12,6 @@
 #include <stdexcept>
 #include <algorithm>
 #include <limits>
-#include <stdlib.h>
-#include <time.h>
 #include "TimeSeriesTransformations.h"
 
 // Helper functions.
@@ -118,14 +118,14 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::string& filename
 
     // Sanity check.
     if (price_vector.size() != time_vector.size()) {
-        throw std::runtime_error("Unable to read csv at " + filenameandpath + ". Columns are not equal in length."); 
+        throw std::runtime_error("Unable to read csv at " + filenameandpath + ". Columns are not equal in length.");
     }
 }
 
 // Constructor from std::vector inputs directly.
 TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& time, const std::vector<double>& price, std::string name) {
-    if (time.size() != price.size()) { 
-        throw std::runtime_error("Price and time vectors are not equally sized."); 
+    if (time.size() != price.size()) {
+        throw std::runtime_error("Price and time vectors are not equally sized.");
     }
 
     for (int i = 0; i < price.size(); i++) {
@@ -165,8 +165,8 @@ bool TimeSeriesTransformations::operator==(const TimeSeriesTransformations& t) c
 
 // Calculate mean of price.
 bool TimeSeriesTransformations::mean(double* meanValue) const {
-    if ((price_vector.size() == 0) || (time_vector.size() == 0)) { 
-        *meanValue = std::numeric_limits<double>::quiet_NaN(); 
+    if ((price_vector.size() == 0) || (time_vector.size() == 0)) {
+        *meanValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
 
@@ -270,7 +270,7 @@ bool TimeSeriesTransformations::removeEntryAtTime(std::string time) {
             price_vector.push_back(pair.second);
             tmp_internal_set.insert({pair.first, pair.second});
         }
-        else { 
+        else {
             element_removed = true;
         }
     }
@@ -451,8 +451,8 @@ bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double
     return true;
 }
 
-std::string TimeSeriesTransformations::getName() const { 
-    return this->name; 
+std::string TimeSeriesTransformations::getName() const {
+    return this->name;
 }
 
 int TimeSeriesTransformations::count() const {
