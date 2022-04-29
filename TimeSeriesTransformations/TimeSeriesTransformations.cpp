@@ -39,7 +39,7 @@ bool StringDateToUnix(std::string date, int* unix_epoch) {
 
     // I am going to cast this to an int for simplicity sake given this program
     // being used beyond 2038 seems rather unlikely.
-    *unix_epoch = (int) mktime(&t);
+    *unix_epoch = static_cast<int>(mktime(&t));
 
     return true;
 }
