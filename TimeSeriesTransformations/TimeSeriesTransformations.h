@@ -38,7 +38,7 @@ struct sorting_struct {
     This is so you can see if a call changes a parameter from the call site not the function definition. If it's not possible to calculate a value;
     you should return std::numeric_limits<double>::quiet_NaN() for the numerical value
 
-    The idea of the code, is you can set things up internally how you want. 
+    The idea of the code, is you can set things up internally how you want.
     That's why dates are supplied to functions as text rather than assuming any internal format.
 
     Any times in this code have the timezone UTC. Dates are really, really hard to get right (that's get right, rather than look right),
@@ -50,13 +50,13 @@ struct sorting_struct {
 
     To reiterate what I said in the previous assignment; don't worry about creating your own namespaces, it's overkill and your code may not mark.
 
-    When you save files, make sure to save prices to an appropriate number of decimal places. Otherwise when it's reloaded, you've lost accuracy. 
+    When you save files, make sure to save prices to an appropriate number of decimal places. Otherwise when it's reloaded, you've lost accuracy.
 
     I've not hard-coded the Separator; a word of warning when dealing with files from outside the UK, in France for instance, the comma is a decimal point, not a delimiter. Yes I have lost time to that. IRL I always use | for the separator in my work.
  
     Reading in CSV files can give you odd results if the last newline character in file is on the last line of data.
 
-    You may get warnings like "Warning	C26812	The enum type 'testing::TestPartResult::Type' is unscoped. Prefer 'enum class' over 'enum' (Enum.3)." when compiling with googletest
+    You may get warnings like "Warning    C26812    The enum type 'testing::TestPartResult::Type' is unscoped. Prefer 'enum class' over 'enum' (Enum.3)." when compiling with googletest
     Don't worry, I shall ignore these.
 
     For removePricesBefore and removePrices after, these are exclusive in the tests; i.e. they don't include the value passed. So if you pass in "2022-03-18 00:13:25", a data point at that time would be retained.
@@ -73,11 +73,11 @@ struct sorting_struct {
 
     I'll give 10% for compiling without warnings already stated and 5% for style. Each warning will cost 1%.
 
-    I will look at the code and give 10% extra, up to a maximum mark of 100% for things the markers consider to be excellent. 
+    I will look at the code and give 10% extra, up to a maximum mark of 100% for things the markers consider to be excellent.
  */
 
 class TimeSeriesTransformations {
-public:
+ public:
     // Constructors
     TimeSeriesTransformations();
     explicit TimeSeriesTransformations(const std::string & filenameandpath);
@@ -115,7 +115,7 @@ public:
     std::vector<double> getPriceVector() const;
     std::set<std::pair<int, double>, sorting_struct> getInternalSet() const;
 
-private:
+ private:
     const int decimalPlaces = 5;
     std::string name = "";
 
