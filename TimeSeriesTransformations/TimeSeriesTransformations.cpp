@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <limits>
 #include <stdlib.h>
-#include <chrono>
 #include <time.h>
 #include "TimeSeriesTransformations.h"
 
@@ -20,7 +19,7 @@ std::vector<double> vectorDiff(std::vector<double> v) {
 	std::vector<double> diff(v.size() - 1);
 
 	for (int i = 0; i < v.size() - 1; i++) {
-		diff[i] = v[static_cast<long long int>(i)+1] - v[i];
+		diff[i] = v[(int64_t)(i)+1] - v[i];
 	}
 
 	return diff;
@@ -35,7 +34,7 @@ bool StringDateToUnix(std::string date, int* unix_epoch) {
 
 	// Check if the date has been parsed correctly.
 	if (string_stream.fail()) {
-		return false; 
+		return false;
 	}
 
 	// I am going to cast this to an int for simplicity sake given this program
@@ -457,7 +456,7 @@ std::string TimeSeriesTransformations::getName() const {
 }
 
 int TimeSeriesTransformations::count() const {
-	return static_cast<long int>(this->price_vector.size());
+	return (int) this->price_vector.size();
 }
 
 char TimeSeriesTransformations::getSeparator() const {

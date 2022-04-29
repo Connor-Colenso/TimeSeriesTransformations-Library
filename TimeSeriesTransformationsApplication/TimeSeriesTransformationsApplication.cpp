@@ -7,3 +7,7 @@
 #include <sstream>
 #include <iomanip>
 #include "..\TimeSeriesTransformations\TimeSeriesTransformations.h"
+
+int main() {
+	std::cout << 2 << std::endl;
+}
