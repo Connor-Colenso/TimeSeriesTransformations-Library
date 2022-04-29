@@ -94,10 +94,13 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::string& filename
     std::istringstream xyz{ line };
 
     std::string column_name;
-    std::getline(xyz, line, this->getSeparator()); // Just somewhere to ditch the time column
-    std::getline(xyz, column_name, this->getSeparator()); // Actual name of the share price column.
+
+    // Just somewhere to ditch the time column header.
+    std::getline(xyz, line, this->getSeparator());
+    // Actual name of the share price column.
+    std::getline(xyz, column_name, this->getSeparator());
     name = column_name;
-    
+
     // Iterate down the file line by line until end of file.
     while (std::getline(csv, line)) {
         std::istringstream iss{ line };
@@ -232,7 +235,8 @@ bool TimeSeriesTransformations::computeIncrementStandardDeviation(double* standa
 }
 
 void TimeSeriesTransformations::addASharePrice(std::string datetime, double price) {
-    int unix_epoch_time; // ??? Should this throw an error or "".
+    // ??? Should this throw an error or "".
+    int unix_epoch_time;
     if ((!StringDateToUnix(datetime, &unix_epoch_time)) || !IsDateValid(datetime)) {
         throw std::invalid_argument("Date " + datetime + " cannot be parsed.");
     }
@@ -269,8 +273,7 @@ bool TimeSeriesTransformations::removeEntryAtTime(std::string time) {
             time_vector.push_back(pair.first);
             price_vector.push_back(pair.second);
             tmp_internal_set.insert({pair.first, pair.second});
-        }
-        else {
+        } else {
             element_removed = true;
         }
     }
@@ -378,7 +381,8 @@ bool TimeSeriesTransformations::removePricesAfter(std::string date) {
 }
 
 std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) const {
-    int unix_epoch_time; // ??? Should this throw an error or "".
+    // ??? Should this throw an error or "".
+    int unix_epoch_time;
     if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
     }
@@ -395,12 +399,12 @@ std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) 
     for (auto const i : v.price_vector) {
         string_of_prices += std::to_string(i) + "\n";
     }
-    
+
     return string_of_prices;
 }
 
 bool TimeSeriesTransformations::getPriceAtDate(const std::string date, double* value) const {
-    int unix_epoch_time; // ??? Should this throw an error or "".
+    int unix_epoch_time;
     if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
         *value = std::numeric_limits<double>::quiet_NaN();
         return false;
@@ -456,7 +460,7 @@ std::string TimeSeriesTransformations::getName() const {
 }
 
 int TimeSeriesTransformations::count() const {
-    return (int) this->price_vector.size();
+    return static_cast<int>(this->price_vector.size());
 }
 
 char TimeSeriesTransformations::getSeparator() const {
