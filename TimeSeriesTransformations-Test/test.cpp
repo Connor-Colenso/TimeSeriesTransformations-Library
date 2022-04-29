@@ -58,7 +58,7 @@ TEST(TimeSeriesTransformations, incrementMeanOfExaminationFile) {
     double mean_output;
     v.computeIncrementMean(&mean_output);
 
-    EXPECT_NEAR(mean_output, 0.002906899018901951, 10e-6);
+    EXPECT_NEAR(mean_output, 0.0029068986898690904, 10e-6);
 
     // Second test. Ensures ordered state.
     TimeSeriesTransformations v_1({1,5,4,2,3}, { 1,5,4,2,3 });
@@ -75,7 +75,14 @@ TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
     double sd_output;
     v.computeIncrementStandardDeviation(&sd_output);
 
-    EXPECT_NEAR(sd_output, 40.359444049806953, 10e-6);
+    EXPECT_NEAR(sd_output, 40.35944404799585, 10e-6);
+
+    // Second test. Ensures ordered state.
+    TimeSeriesTransformations v_1({ 1,5,4,2,3 }, { 1,5,4,2,3 });
+    double sd_output_1;
+    v_1.computeIncrementStandardDeviation(&sd_output_1);
+
+    EXPECT_EQ(sd_output_1, 0);
 }
 
 // test files with no data;
@@ -169,7 +176,7 @@ TEST(TimeSeriesTransformations, getAPriceAtADateThatDoesNotExist) {
 
 // Check empty constructor
 TEST(TimeSeriesTransformations, checkEmptyConstructor) {
-    TimeSeriesTransformations v();
+    TimeSeriesTransformations v;
 
     // I don't really know what to test for here? If the object is created then the test passes I guess.
     EXPECT_TRUE(true);
@@ -396,5 +403,3 @@ TEST(TimeSeriesTransformations, printPricesOnTrickyDay) {
     EXPECT_THROW(v.printSharePricesOnDate("1970-02-31"), std::invalid_argument);
     EXPECT_THROW(v.printSharePricesOnDate("1970-02-31 00:00:00"), std::invalid_argument);
 }
-
-
