@@ -113,6 +113,7 @@ public:
 
     std::vector<int> getTimeVector() const;
     std::vector<double> getPriceVector() const;
+    std::set<std::pair<int, double>, sorting_struct> getInternalSet() const;
 
 private:
     const int decimalPlaces = 5;

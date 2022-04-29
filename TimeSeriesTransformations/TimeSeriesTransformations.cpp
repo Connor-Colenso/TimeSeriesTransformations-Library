@@ -235,7 +235,6 @@ bool TimeSeriesTransformations::computeIncrementStandardDeviation(double* standa
 }
 
 void TimeSeriesTransformations::addASharePrice(std::string datetime, double price) {
-    // ??? Should this throw an error or "".
     int unix_epoch_time;
     if ((!StringDateToUnix(datetime, &unix_epoch_time)) || !IsDateValid(datetime)) {
         throw std::invalid_argument("Date " + datetime + " cannot be parsed.");
@@ -261,7 +260,7 @@ bool TimeSeriesTransformations::removeEntryAtTime(std::string time) {
     }
 
     std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-    bool element_removed = false;
+    bool is_element_removed = false;
 
     // Vector objects must be re-allocated because of new elements in the set.
     price_vector.clear();
@@ -274,18 +273,19 @@ bool TimeSeriesTransformations::removeEntryAtTime(std::string time) {
             price_vector.push_back(pair.second);
             tmp_internal_set.insert({pair.first, pair.second});
         } else {
-            element_removed = true;
+            is_element_removed = true;
         }
     }
 
     internal_set = tmp_internal_set;
     tmp_internal_set.clear();
 
-    return element_removed;
+    return is_element_removed;
 }
 
 bool TimeSeriesTransformations::removePricesGreaterThan(double price) {
     std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
+    bool is_element_removed = false;
 
     price_vector.clear();
     time_vector.clear();
@@ -296,6 +296,8 @@ bool TimeSeriesTransformations::removePricesGreaterThan(double price) {
 
             time_vector.push_back(pair.first);
             price_vector.push_back(pair.second);
+        } else {
+            is_element_removed = true;
         }
     }
 
@@ -303,11 +305,12 @@ bool TimeSeriesTransformations::removePricesGreaterThan(double price) {
     tmp_internal_set.clear();
 
     // I see no real reason this should fail, even if no elements actually match the condition.
-    return true;
+    return is_element_removed;
 }
 
 bool TimeSeriesTransformations::removePricesLowerThan(double price) {
     std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
+    bool is_element_removed = false;
 
     price_vector.clear();
     time_vector.clear();
@@ -318,14 +321,15 @@ bool TimeSeriesTransformations::removePricesLowerThan(double price) {
 
             time_vector.push_back(pair.first);
             price_vector.push_back(pair.second);
+        } else {
+            is_element_removed = true;
         }
     }
 
     internal_set = tmp_internal_set;
     tmp_internal_set.clear();
 
-    // I see no real reason this should fail, even if no elements actually match the condition.
-    return true;
+    return is_element_removed;
 }
 
 bool TimeSeriesTransformations::removePricesBefore(std::string date) {
@@ -335,7 +339,6 @@ bool TimeSeriesTransformations::removePricesBefore(std::string date) {
     }
 
     std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-
     bool is_element_removed = false;
 
     price_vector.clear();
@@ -346,7 +349,8 @@ bool TimeSeriesTransformations::removePricesBefore(std::string date) {
             tmp_internal_set.insert({ pair.first, pair.second });
 
             time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second); // ??? If element is not removed return false.
+            price_vector.push_back(pair.second);
+        } else {
             is_element_removed = true;
         }
     }
@@ -364,6 +368,7 @@ bool TimeSeriesTransformations::removePricesAfter(std::string date) {
     }
 
     std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
+    bool is_element_removed = false;
 
     price_vector.clear();
     time_vector.clear();
@@ -374,18 +379,22 @@ bool TimeSeriesTransformations::removePricesAfter(std::string date) {
 
             time_vector.push_back(pair.first);
             price_vector.push_back(pair.second);
+        } else {
+            is_element_removed = true;
         }
     }
 
     internal_set = tmp_internal_set;
     tmp_internal_set.clear();
 
-    return true;
+    return is_element_removed;
 }
 
 std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) const {
+    std::string truncated_date = std::string(date.begin(), date.begin() + 10);
     int unix_epoch_time;
-    if ((!StringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+    // I'm deliberately leaving IsDateValid with date so it will still error if you put in an invalid date.
+    if ((!StringDateToUnix(truncated_date, &unix_epoch_time)) || !IsDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
     }
 
@@ -421,7 +430,6 @@ bool TimeSeriesTransformations::getPriceAtDate(const std::string date, double* v
 }
 
 std::string TimeSeriesTransformations::printIncrementsOnDate(std::string date) const {
-    // ??? Should this throw an error or "".
     if (!IsDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
     }
@@ -437,23 +445,29 @@ std::string TimeSeriesTransformations::printIncrementsOnDate(std::string date) c
     return v.printSharePricesOnDate(date);
 }
 
-bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double* price_increment) const {
-    std::string output = this->printIncrementsOnDate(*date);
-    std::string tmp;
+bool cmp(std::pair<int, double> A, std::pair<int, double> B) {
+    return A.second < B.second;
+}
 
-    if (output == "") {
+bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double* price_increment) const {
+
+    if ((price_vector.size() <= 1) && (time_vector.size() <= 1)) {
         *price_increment = std::numeric_limits<double>::quiet_NaN();
+        *date = "";
         return false;
     }
 
-    std::vector<double> increments;
-    std::stringstream ss(output);
+    std::vector<double> increments = vectorDiff(price_vector);
+    std::vector<std::pair<int, double>> tmp_vector;
 
-    while (std::getline(ss, tmp)) {
-        increments.push_back(std::stod(tmp));
+    for (int i = 0; i < increments.size(); i++) {
+        tmp_vector.push_back({time_vector[i+1], increments[i]});
     }
 
-    *price_increment = *std::max_element(increments.begin(), increments.end());
+    auto pair = std::max_element(tmp_vector.begin(), tmp_vector.begin(), [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+    std::cout << "test";
+    *date = UnixEpochToString(pair->first);
+    *price_increment = pair->second;
     return true;
 }
 
@@ -491,4 +505,8 @@ std::vector<double> TimeSeriesTransformations::getPriceVector() const {
 
 std::vector<int> TimeSeriesTransformations::getTimeVector() const {
     return time_vector;
+}
+
+std::set<std::pair<int, double>, sorting_struct> TimeSeriesTransformations::getInternalSet() const {
+    return internal_set;
 }

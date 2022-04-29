@@ -70,7 +70,6 @@ TEST(TimeSeriesTransformations, incrementMeanOfExaminationFile) {
 TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
     TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\Problem3_DATA.csv");
 
-    // Create ptr to double and pass through standardDeviation function.
     double sd_output;
     v.computeIncrementStandardDeviation(&sd_output);
 
@@ -217,26 +216,37 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
 
 // Test find greatestincrements
 TEST(TimeSeriesTransformations, findGreatestIncrementsWithData) {
-    TimeSeriesTransformations v({ 10, 20, 30, 40, 86401 }, { 1, 100, 3, 4, 100000 });
+    TimeSeriesTransformations v({ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, { 1, 2000, 3, 4, 5, 6, 7, 8, 9 });
 
     double price;
-    std::string date = "1970-01-01 00:00:00";
+    std::string date;
     EXPECT_TRUE(v.findGreatestIncrements(&date, &price));
 
-    EXPECT_EQ(price, 99);
+    EXPECT_EQ(price, 1999);
+    EXPECT_EQ(date, "1970-01-01 00:00:02");
 }
 
 TEST(TimeSeriesTransformations, findGreatestIncrementsWithNoData) {
-    TimeSeriesTransformations v({}, {});
+    TimeSeriesTransformations v;
 
     double price;
-    std::string date = "1970-01-01 00:00:00";
-    EXPECT_FALSE(v.findGreatestIncrements(&date, &price));
+    std::string date;
 
+    EXPECT_FALSE(v.findGreatestIncrements(&date, &price));
     EXPECT_TRUE(std::isnan(price));
+    EXPECT_EQ(date, "");
+
+    // Test for not enough data.
+    TimeSeriesTransformations v_1({ 1 }, { 1 });
+
+    double price_1;
+    std::string date_1;
+
+    EXPECT_FALSE(v_1.findGreatestIncrements(&date_1, &price_1));
+    EXPECT_TRUE(std::isnan(price_1));
+    EXPECT_EQ(date_1, "");
 }
 
-// ------------------------------------------------- Count
 TEST(TimeSeriesTransformations, countDataRowsLoadedInExaminationFile) {
     TimeSeriesTransformations v({ 10, 20, 30, 40 }, { 1, 2, 3, 2 });
     EXPECT_EQ(v.count(), 4);
@@ -247,24 +257,26 @@ TEST(TimeSeriesTransformations, countEmptyFile) {
     EXPECT_EQ(v.count(), 0);
 }
 
-// addASharePrice
 TEST(TimeSeriesTransformations, testAddASharePrice) {
     TimeSeriesTransformations v({ 10, 20, 30, 40 }, { 1, 2, 3, 2 });
 
+    // Strictly speaking I would personally say this shouldn't be void because adding a price at the same time twice should logically fail.
     v.addASharePrice("1970-01-01 00:00:00", 2);
 
     EXPECT_EQ(v.getPriceVector()[0], 2);
     EXPECT_EQ(v.getTimeVector()[0], 0);
 }
 
-// removeEntryAtTime
 TEST(TimeSeriesTransformations, removeEntryThatExistsAtTime) {
     TimeSeriesTransformations v({ 10, 20, 30, 40 }, { 1, 2, 3, 2 });
 
-    v.removeEntryAtTime("1970-01-01 00:00:10");
+    EXPECT_TRUE(v.removeEntryAtTime("1970-01-01 00:00:10"));
 
     EXPECT_EQ(v.getPriceVector()[0], 2);
     EXPECT_EQ(v.getTimeVector()[0], 20);
+
+    EXPECT_EQ(v.getPriceVector().size(), 3);
+    EXPECT_EQ(v.getTimeVector().size(), 3);
 }
 
 TEST(TimeSeriesTransformations, removeEntryThatHasNeverExisted) {
@@ -279,7 +291,7 @@ TEST(TimeSeriesTransformations, removeEntryThatHasNeverExisted) {
 // removePricesGreaterThan
 TEST(TimeSeriesTransformations, removePricesGreaterThan) {
     TimeSeriesTransformations v({ 10, 20, 30, 40, 50, 60 }, { 7, 7, 4, 3, 9, 5 });
-    v.removePricesGreaterThan(5);
+    EXPECT_TRUE(v.removePricesGreaterThan(5));
 
     EXPECT_EQ(v.getPriceVector()[0], 4);
     EXPECT_EQ(v.getTimeVector()[0], 30);
@@ -289,12 +301,18 @@ TEST(TimeSeriesTransformations, removePricesGreaterThan) {
 
     EXPECT_EQ(v.getPriceVector().size(), 3);
     EXPECT_EQ(v.getTimeVector().size(), 3);
+
+    TimeSeriesTransformations v_1({ 10, 11, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5, 6 });
+    EXPECT_FALSE(v_1.removePricesGreaterThan(6));
+    EXPECT_FALSE(v_1.removePricesGreaterThan(7));
+    EXPECT_EQ(v_1.getPriceVector().size(), 6);
+    EXPECT_EQ(v_1.getTimeVector().size(), 6);
 }
 
 // removePricesLessThan
 TEST(TimeSeriesTransformations, removePricesLessThan) {
     TimeSeriesTransformations v({ 10, 20, 30, 40, 50, 60 }, { 1, 2, 6, 7, 3, 5 });
-    v.removePricesLowerThan(5);
+    EXPECT_TRUE(v.removePricesLowerThan(5));
 
     EXPECT_EQ(v.getPriceVector()[0], 6);
     EXPECT_EQ(v.getTimeVector()[0], 30);
@@ -304,12 +322,17 @@ TEST(TimeSeriesTransformations, removePricesLessThan) {
 
     EXPECT_EQ(v.getPriceVector().size(), 3);
     EXPECT_EQ(v.getTimeVector().size(), 3);
+
+    TimeSeriesTransformations v_1({ 10, 11, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5, 6 });
+    EXPECT_FALSE(v_1.removePricesLowerThan(1));
+    EXPECT_EQ(v_1.getPriceVector().size(), 6);
+    EXPECT_EQ(v_1.getTimeVector().size(), 6);
 }
 
 // removePricesBefore
 TEST(TimeSeriesTransformations, removePricesBefore) {
     TimeSeriesTransformations v({ 10, 11, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5, 6 });
-    v.removePricesBefore("1970-01-01 00:00:11");
+    EXPECT_TRUE(v.removePricesBefore("1970-01-01 00:00:11"));
 
     EXPECT_EQ(v.getPriceVector()[0], 2);
     EXPECT_EQ(v.getTimeVector()[0], 11);
@@ -319,12 +342,17 @@ TEST(TimeSeriesTransformations, removePricesBefore) {
 
     EXPECT_EQ(v.getPriceVector().size(), 5);
     EXPECT_EQ(v.getTimeVector().size(), 5);
+
+    TimeSeriesTransformations v_1({ 10, 11, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5, 6 });
+    EXPECT_FALSE(v_1.removePricesBefore("1970-01-01 00:00:01"));
+    EXPECT_EQ(v_1.getPriceVector().size(), 6);
+    EXPECT_EQ(v_1.getTimeVector().size(), 6);
 }
 
 // removePricesAfter
 TEST(TimeSeriesTransformations, removePricesAfter) {
     TimeSeriesTransformations v({ 10, 11, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5, 6 });
-    v.removePricesAfter("1970-01-01 00:00:11");
+    EXPECT_TRUE(v.removePricesAfter("1970-01-01 00:00:11"));
 
     EXPECT_EQ(v.getPriceVector()[0], 1);
     EXPECT_EQ(v.getTimeVector()[0], 10);
@@ -334,6 +362,12 @@ TEST(TimeSeriesTransformations, removePricesAfter) {
 
     EXPECT_EQ(v.getPriceVector().size(), 2);
     EXPECT_EQ(v.getTimeVector().size(), 2);
+
+    TimeSeriesTransformations v_1({ 10, 11, 20, 30, 40, 50 }, { 1, 2, 3, 4, 5, 6 });
+    EXPECT_FALSE(v_1.removePricesBefore("1970-01-50 00:00:01"));
+    EXPECT_FALSE(v_1.removePricesBefore("1970-01-55 00:00:01"));
+    EXPECT_EQ(v_1.getPriceVector().size(), 6);
+    EXPECT_EQ(v_1.getTimeVector().size(), 6);
 }
 
 TEST(TimeSeriesTransformations, removePricesAfterAndBefore) {
@@ -398,6 +432,11 @@ TEST(TimeSeriesTransformations, printIncrementPricesOnDay) {
     std::string output_prices = v.printIncrementsOnDate("1970-01-01");
 
     EXPECT_EQ(countNewLines(output_prices), 2);
+
+    TimeSeriesTransformations v_1({ 86398, 86399, 86400, 86401 }, { 1, 2, 3, 4 });
+    std::string output_prices_1 = v_1.printIncrementsOnDate("1970-01-01");
+
+    EXPECT_EQ(countNewLines(output_prices_1), 1);
 }
 
 TEST(TimeSeriesTransformations, printIncrementPricesOnDayExactDayBoundary) {
