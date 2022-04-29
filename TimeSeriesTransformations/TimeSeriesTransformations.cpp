@@ -450,7 +450,6 @@ bool cmp(std::pair<int, double> A, std::pair<int, double> B) {
 }
 
 bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double* price_increment) const {
-
     if ((price_vector.size() <= 1) && (time_vector.size() <= 1)) {
         *price_increment = std::numeric_limits<double>::quiet_NaN();
         *date = "";
