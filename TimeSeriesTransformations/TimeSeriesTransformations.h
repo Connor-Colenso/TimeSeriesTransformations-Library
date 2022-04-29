@@ -111,13 +111,14 @@ class TimeSeriesTransformations {
     char getSeparator() const;
     char separator = ',';
 
+    std::string name = "";
+
     std::vector<int> getTimeVector() const;
     std::vector<double> getPriceVector() const;
     std::set<std::pair<int, double>, sorting_struct> getInternalSet() const;
 
  private:
     const int decimalPlaces = 5;
-    std::string name = "";
 
     // These are not the main method of storage btu useful to prebuild for getTimeVector and getPriceVector.
     std::vector<int> time_vector;

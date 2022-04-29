@@ -202,16 +202,37 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
 
     v_1.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\TEST_SAVE.csv");
 
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\TEST_SAVE.csv");
+    TimeSeriesTransformations v_2("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\TEST_SAVE.csv");
     // Check start value.
-    EXPECT_NEAR(v.getPriceVector()[0], 61.43814, 10e-5);
-    EXPECT_EQ(v.getTimeVector()[0], 1619120010);
+    EXPECT_NEAR(v_2.getPriceVector()[0], 61.43814, 10e-5);
+    EXPECT_EQ(v_2.getTimeVector()[0], 1619120010);
 
-    int vector_length = static_cast<int>(v.getPriceVector().size());
+    int vector_length = static_cast<int>(v_2.getPriceVector().size());
 
     // Check end value.
-    EXPECT_NEAR(v.getPriceVector()[vector_length - 1], 90.50422, 10e-5);
-    EXPECT_EQ(v.getTimeVector()[vector_length - 1], 1669115010);
+    EXPECT_NEAR(v_2.getPriceVector()[vector_length - 1], 90.50422, 10e-5);
+    EXPECT_EQ(v_2.getTimeVector()[vector_length - 1], 1669115010);
+
+    // Check custom names.
+    TimeSeriesTransformations v_3({ 1, 2, 3 }, { 10, 20, 30 }, "APPL");
+    v_3.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\APPL_SAVE.csv");
+    
+    TimeSeriesTransformations v_4("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\APPL_SAVE.csv");
+    EXPECT_EQ(v_4.getPriceVector()[0], 10);
+    EXPECT_EQ(v_4.getPriceVector()[1], 20);
+    EXPECT_EQ(v_4.getPriceVector()[2], 30);
+
+    EXPECT_EQ(v_4.getTimeVector()[0], 1);
+    EXPECT_EQ(v_4.getTimeVector()[1], 2);
+    EXPECT_EQ(v_4.getTimeVector()[2], 3);
+
+    EXPECT_EQ(v_4.count(), 3);
+    EXPECT_EQ(v_4.getName(), "APPL");
+    EXPECT_EQ(v_4.getSeparator(), ',');
+
+    v_4.separator = '|';
+    v_4.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3-students (1)\\AMF-Assignment3\\APPL_SAVE_DIFF_SEP.csv");
+    // However this file cannot be loaded back in because we cannot provide a separator to the filename constructor.
 }
 
 // Test find greatestincrements

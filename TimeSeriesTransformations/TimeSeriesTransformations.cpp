@@ -126,7 +126,7 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::string& filename
 }
 
 // Constructor from std::vector inputs directly.
-TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& time, const std::vector<double>& price, std::string name) {
+TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& time, const std::vector<double>& price, std::string name) : name(name) {
     if (time.size() != price.size()) {
         throw std::runtime_error("Price and time vectors are not equally sized.");
     }
@@ -139,8 +139,6 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& tim
         time_vector.push_back(pair.first);
         price_vector.push_back(pair.second);
     }
-
-    std::string series_name = name;
 }
 
 // Copy constructor.
@@ -484,7 +482,7 @@ void TimeSeriesTransformations::saveData(std::string filename) const {
 
     if (new_csv.is_open()) {
         // Adds header to csv.
-        new_csv << "TIMESTAMP," << name << std::endl;
+        new_csv << "TIMESTAMP" << this->getSeparator() << name << std::endl;
 
         for (const auto& pair : internal_set) {
             new_csv << pair.first << separator << pair.second << std::endl;
