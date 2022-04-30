@@ -143,8 +143,16 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& tim
 
 // Copy constructor.
 TimeSeriesTransformations::TimeSeriesTransformations(const TimeSeriesTransformations& t) {
-    price_vector = t.price_vector;
-    time_vector = t.time_vector;
+    name = t.getName();
+
+    for (int i = 0; i < t.getTimeVector().size(); i++) {
+        internal_set.insert({ t.getTimeVector()[i], t.getPriceVector()[i] });
+    }
+
+    for (auto const& pair : internal_set) {
+        time_vector.push_back(pair.first);
+        price_vector.push_back(pair.second);
+    }
 }
 
 // Assignment Operator.
