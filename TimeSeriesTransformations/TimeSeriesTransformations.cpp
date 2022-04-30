@@ -144,6 +144,7 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& tim
 // Copy constructor.
 TimeSeriesTransformations::TimeSeriesTransformations(const TimeSeriesTransformations& t) {
     name = t.getName();
+    separator = t.getSeparator();
 
     for (int i = 0; i < t.getTimeVector().size(); i++) {
         internal_set.insert({ t.getTimeVector()[i], t.getPriceVector()[i] });
@@ -157,19 +158,23 @@ TimeSeriesTransformations::TimeSeriesTransformations(const TimeSeriesTransformat
 
 // Assignment Operator.
 TimeSeriesTransformations& TimeSeriesTransformations::operator=(const TimeSeriesTransformations& t) {
-    // Copy the data.
-    price_vector = t.price_vector;
-    time_vector = t.time_vector;
+    this->name = t.getName();
+    this->separator = t.getSeparator();
+    this->price_vector = t.getPriceVector();
+    this->time_vector = t.getTimeVector();
+    this->internal_set = t.getInternalSet();
 
-    // Return the dereferenced modified object.
-    return *this;
+    return (*this);
 }
 
 // Equality Operator.
 bool TimeSeriesTransformations::operator==(const TimeSeriesTransformations& t) const {
     // Because of && if (t.time == time) is false then (t.price == price) will not be evaluated. Saves time.
     // It is also better that (t.time == time) is evaluated first since integer comparison is faster than float comparison (though very minor).
-    return ((t.time_vector == time_vector) && (t.price_vector == price_vector));
+    bool names_equal = (name == t.getName());
+    bool separator_equal = (separator == t.getSeparator());
+    bool time_and_price_equal = (internal_set == t.getInternalSet());
+    return (names_equal && separator_equal && time_and_price_equal);
 }
 
 // Calculate mean of price.
