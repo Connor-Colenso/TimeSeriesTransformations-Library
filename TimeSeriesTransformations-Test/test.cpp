@@ -6,9 +6,11 @@ bool test(double in, double in2) {
     return abs((in - in2) / in) < 0.00001;
 }
 
+std::string filepath = "C:\\Users\\cxc1135\\Source\\Repos\\Connor-Colenso\\TimeSeriesTransformations-Library\\";
+
 TEST(TimeSeriesTransformations, loadFileExaminationFile) {
     // Load file.
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+    TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
 
     // Check start value.
     EXPECT_NEAR(v.getPriceVector()[0], 61.43814, 10e-5);
@@ -31,7 +33,7 @@ TEST(TimeSeriesTransformations, loadFileExaminationFile) {
 }
 
 TEST(TimeSeriesTransformations, meanOfExaminationFile) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
 
     // Create ptr to double and pass through mean function.
     double mean_output;
@@ -41,7 +43,7 @@ TEST(TimeSeriesTransformations, meanOfExaminationFile) {
 }
 
 TEST(TimeSeriesTransformations, standardDeviationOfExaminationFile) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
 
     // Create ptr to double and pass through standardDeviation function.
     double sd_output;
@@ -51,7 +53,7 @@ TEST(TimeSeriesTransformations, standardDeviationOfExaminationFile) {
 }
 
 TEST(TimeSeriesTransformations, incrementMeanOfExaminationFile) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
 
     // Create ptr to double and pass through standardDeviation function.
     double mean_output;
@@ -68,7 +70,7 @@ TEST(TimeSeriesTransformations, incrementMeanOfExaminationFile) {
 }
 
 TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
 
     double sd_output;
     v.computeIncrementStandardDeviation(&sd_output);
@@ -86,21 +88,21 @@ TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
 // test files with no data;
 
 TEST(TimeSeriesTransformations, meanOfEmptyFileWithHeader) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\empty_with_header.csv");
+	TimeSeriesTransformations v(filepath + "empty_with_header.csv");
     double mean_output;
     EXPECT_EQ(v.mean(&mean_output), false);
     EXPECT_TRUE(std::isnan(mean_output));
 }
 
 TEST(TimeSeriesTransformations, standardDeviationEmptyFileOfEmptyFileWithHeader) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\empty_with_header.csv");
+	TimeSeriesTransformations v(filepath + "empty_with_header.csv");
     double standard_deviation;
     EXPECT_EQ(v.standardDeviation(&standard_deviation), false);
     EXPECT_TRUE(std::isnan(standard_deviation));
 }
 
 TEST(TimeSeriesTransformations, incrementMeanOfEmptyFileWithHeader) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\empty_with_header.csv");
+	TimeSeriesTransformations v(filepath + "empty_with_header.csv");
 
     double mean_output;
     EXPECT_EQ(v.computeIncrementMean(&mean_output), false);
@@ -116,7 +118,7 @@ TEST(TimeSeriesTransformations, incrementMeanUnorderedFileWithData) {
 }
 
 TEST(TimeSeriesTransformations, incrementStandardDeviationEmptyFileWithHeader) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\empty_with_header.csv");
+	TimeSeriesTransformations v(filepath + "empty_with_header.csv");
     double sd_output;
     EXPECT_EQ(v.computeIncrementStandardDeviation(&sd_output), false);
     EXPECT_TRUE(std::isnan(sd_output));
@@ -124,18 +126,18 @@ TEST(TimeSeriesTransformations, incrementStandardDeviationEmptyFileWithHeader) {
 //------------------------------------------------- NAME
 
 TEST(TimeSeriesTransformations, testNameEmptyFileWithHeader) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\empty_with_header.csv");
+	TimeSeriesTransformations v(filepath + "empty_with_header.csv");
     EXPECT_EQ(v.getName(), "ShareX");
 }
 
 TEST(TimeSeriesTransformations, testNameOfExaminationFile) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
     EXPECT_EQ(v.getName(), "ShareX");
 }
 
 // ----Test Empty file exception
 TEST(TimeSeriesTransformations, throwRunTimeFromFileDoesNotExist) {
-    EXPECT_THROW(TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\file_does_not_exist.csv"), std::runtime_error);
+    EXPECT_THROW(TimeSeriesTransformations v(filepath + "file_does_not_exist.csv"), std::runtime_error);
 }
 
 //--------------- Test build a TimeSeriesTransformation from vectors
@@ -183,7 +185,7 @@ TEST(TimeSeriesTransformations, checkEmptyConstructor) {
 
 // Check copy constructor
 TEST(TimeSeriesTransformations, checkCopyConstructor) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v(filepath + "Problem3_DATA.csv");
     v.separator = '|';
     TimeSeriesTransformations v_1(v);
 
@@ -194,7 +196,7 @@ TEST(TimeSeriesTransformations, checkCopyConstructor) {
 
 // Test assignment operator and equality operator.
 TEST(TimeSeriesTransformations, checkAssignmentAndEqualityOperator) {
-    TimeSeriesTransformations v1("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v1(filepath + "Problem3_DATA.csv");
     TimeSeriesTransformations v2;
 
     // Check assignment operator.
@@ -215,11 +217,11 @@ TEST(TimeSeriesTransformations, checkAssignmentAndEqualityOperator) {
 
 // Test Save function
 TEST(TimeSeriesTransformations, checkSaveFunctionality) {
-    TimeSeriesTransformations v_1("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\Problem3_DATA.csv");
+	TimeSeriesTransformations v_1(filepath + "Problem3_DATA.csv");
 
-    v_1.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\TEST_SAVE.csv");
+    v_1.saveData(filepath + "TEST_SAVE.csv");
 
-    TimeSeriesTransformations v_2("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\TEST_SAVE.csv");
+	TimeSeriesTransformations v_2(filepath + "TEST_SAVE.csv");
     // Check start value.
     EXPECT_NEAR(v_2.getPriceVector()[0], 61.43814, 10e-5);
     EXPECT_EQ(v_2.getTimeVector()[0], 1619120010);
@@ -232,9 +234,9 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
 
     // Check custom names.
     TimeSeriesTransformations v_3({ 1, 2, 3 }, { 10, 20, 30 }, "APPL");
-    v_3.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\APPL_SAVE.csv");
+    v_3.saveData(filepath + "APPL_SAVE.csv");
 
-    TimeSeriesTransformations v_4("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\APPL_SAVE.csv");
+    TimeSeriesTransformations v_4(filepath + "APPL_SAVE.csv");
     EXPECT_EQ(v_4.getPriceVector()[0], 10);
     EXPECT_EQ(v_4.getPriceVector()[1], 20);
     EXPECT_EQ(v_4.getPriceVector()[2], 30);
@@ -248,7 +250,7 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
     EXPECT_EQ(v_4.getSeparator(), ',');
 
     v_4.separator = '|';
-    v_4.saveData("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\APPL_SAVE_DIFF_SEP.csv");
+    v_4.saveData(filepath + "APPL_SAVE_DIFF_SEP.csv");
     // However this file cannot be loaded back in because we cannot provide a separator to the filename constructor.
 }
 
@@ -291,7 +293,7 @@ TEST(TimeSeriesTransformations, countDataRowsLoadedInExaminationFile) {
 }
 
 TEST(TimeSeriesTransformations, countEmptyFile) {
-    TimeSeriesTransformations v("C:\\Users\\Admin\\Desktop\\AMF-Assignment3\\empty_with_header.csv");
+    TimeSeriesTransformations v(filepath + "empty_with_header.csv");
     EXPECT_EQ(v.count(), 0);
     EXPECT_EQ(v.getName(), "ShareX");
 }

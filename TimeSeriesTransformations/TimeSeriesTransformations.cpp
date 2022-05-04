@@ -30,7 +30,11 @@ bool stringDateToUnix(std::string date, int* unix_epoch) {
     std::tm t{};
     std::istringstream string_stream(date);
 
-    string_stream >> std::get_time(&t, "%Y-%m-%d %H:%M:%S");
+	if (date.size() == 10) {
+		string_stream >> std::get_time(&t, "%Y-%m-%d");
+	} else {
+		string_stream >> std::get_time(&t, "%Y-%m-%d %H:%M:%S");
+	}
 
     // Check if the date has been parsed correctly.
     if (string_stream.fail()) {
