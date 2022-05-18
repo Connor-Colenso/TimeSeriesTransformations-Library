@@ -3,10 +3,10 @@ Small library cabable of loading in csv files containing a time series of price 
 
 - Loading in a csv
 - Saving to a csv with a custom separator
-- Mean
-- Increment mean
-- Standard deviation
-- Increment standard deviation
+- Calculating mean
+- Calculating increment mean
+- Calculating standard deviation
+- Calculating increment standard deviation
 - Filtering by time
 - Filtering by price
 - Removing/adding entries at time/price.
