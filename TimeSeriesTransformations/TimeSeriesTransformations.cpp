@@ -15,7 +15,7 @@
 #include "TimeSeriesTransformations.h"
 
 // Helper functions.
-std::vector<double> vectorDiff(std::vector<double> v) {
+std::vector<double> vectorDiff(const std::vector<double>& v) {
     std::vector<double> diff(v.size() - 1);
 
     for (int i = 0; i < v.size() - 1; i++) {
@@ -26,7 +26,7 @@ std::vector<double> vectorDiff(std::vector<double> v) {
 }
 
 // Convert human readable date to unix epoch timestamp.
-bool stringDateToUnix(std::string date, int* unix_epoch) {
+bool stringDateToUnix(const std::string& date, int* unix_epoch) {
     std::tm t{};
     std::istringstream string_stream(date);
 
@@ -49,7 +49,7 @@ bool stringDateToUnix(std::string date, int* unix_epoch) {
 }
 
 // Convert unix epoch timestamp to a readable date format.
-std::string unixEpochToString(int input_time) {
+std::string unixEpochToString(const int input_time) {
     struct tm* timeinfo;
     time_t epoch_time = input_time;
     timeinfo = gmtime(&epoch_time);
@@ -60,7 +60,7 @@ std::string unixEpochToString(int input_time) {
 }
 
 // Check if a date is valid.
-bool IsDateValid(std::string date) {
+bool IsDateValid(const std::string& date) {
     int unix_epoch;
     stringDateToUnix(date, &unix_epoch);
 
@@ -150,8 +150,8 @@ TimeSeriesTransformations::TimeSeriesTransformations(const TimeSeriesTransformat
     name = t.getName();
     separator = t.getSeparator();
 
-    for (int i = 0; i < t.getTimeVector().size(); i++) {
-        internal_set.insert({ t.getTimeVector()[i], t.getPriceVector()[i] });
+    for (const auto& [time, price] : t.getInternalSet()) {
+        internal_set.insert({ time, price });
     }
 
     for (auto const& pair : internal_set) {
