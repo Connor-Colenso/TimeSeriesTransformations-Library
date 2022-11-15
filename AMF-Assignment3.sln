@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TimeSeriesTransformations",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TimeSeriesTransformationsApplication", "TimeSeriesTransformationsApplication\TimeSeriesTransformationsApplication.vcxproj", "{DD3EA01D-98F9-43A3-A405-6B70F7CE08E4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TimeSeriesTransformations-Test", "TimeSeriesTransformations-Test\TimeSeriesTransformations-Test.vcxproj", "{E3918942-D989-491C-8EF2-099D8B6610BA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TSS-UnitTest", "TSS-UnitTest\TSS-UnitTest.vcxproj", "{890A0D18-6FA9-437F-9618-C90CE4D023B9}"
 EndProject
 Global
@@ -33,13 +31,6 @@ Global
 		{DD3EA01D-98F9-43A3-A405-6B70F7CE08E4}.Release|x64.ActiveCfg = Release|x64
 		{DD3EA01D-98F9-43A3-A405-6B70F7CE08E4}.Release|x64.Build.0 = Release|x64
 		{DD3EA01D-98F9-43A3-A405-6B70F7CE08E4}.Release|x86.ActiveCfg = Release|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Debug|x64.ActiveCfg = Debug|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Debug|x64.Build.0 = Debug|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Debug|x86.ActiveCfg = Debug|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Debug|x86.Build.0 = Debug|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Release|x64.ActiveCfg = Release|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Release|x64.Build.0 = Release|x64
-		{E3918942-D989-491C-8EF2-099D8B6610BA}.Release|x86.ActiveCfg = Release|x64
 		{890A0D18-6FA9-437F-9618-C90CE4D023B9}.Debug|x64.ActiveCfg = Debug|x64
 		{890A0D18-6FA9-437F-9618-C90CE4D023B9}.Debug|x64.Build.0 = Debug|x64
 		{890A0D18-6FA9-437F-9618-C90CE4D023B9}.Debug|x86.ActiveCfg = Debug|Win32
