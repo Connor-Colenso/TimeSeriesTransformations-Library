@@ -49,7 +49,7 @@ public:
     bool getPriceAtDate(const std::string& date, double* value) const;
     void saveData(const std::string& filename) const;
     size_t count() const noexcept;
-    std::string getName() const;
+    std::string getName() const noexcept;
     std::vector<std::pair<int, double>> getTimePricePairs() const noexcept;
 
     char getSeparator() const noexcept;
