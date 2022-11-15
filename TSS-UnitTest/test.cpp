@@ -63,7 +63,7 @@ TEST(TimeSeriesTransformations, incrementMeanOfExaminationFile) {
     double mean_output_1;
     v_1.computeIncrementMean(&mean_output_1);
 
-    EXPECT_EQ(mean_output_1, 1);
+    EXPECT_NEAR(mean_output_1, 1, 10e-6);
 }
 
 TEST(TimeSeriesTransformations, incrementStandardDeviationOfExaminationFile) {
@@ -255,33 +255,29 @@ TEST(TimeSeriesTransformations, checkSaveFunctionality) {
 TEST(TimeSeriesTransformations, findGreatestIncrementsWithData) {
     TimeSeriesTransformations v({ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, { 1, 2000, 3, 4, 5, 6, 7, 8, 9 });
 
-    double price;
-    std::string date;
-    EXPECT_TRUE(v.findGreatestIncrements(&date, &price));
+    double price = 0.0;
+    EXPECT_TRUE(v.findGreatestIncrements(&price));
 
     EXPECT_EQ(price, 1999);
-    EXPECT_EQ(date, "1970-01-01 00:00:02");
 }
 
 TEST(TimeSeriesTransformations, findGreatestIncrementsWithNoData) {
     TimeSeriesTransformations v;
 
-    double price;
+    double price = 0.0;
     std::string date;
 
-    EXPECT_FALSE(v.findGreatestIncrements(&date, &price));
+    EXPECT_FALSE(v.findGreatestIncrements(&price));
     EXPECT_TRUE(std::isnan(price));
     EXPECT_EQ(date, "");
 
     // Test for not enough data.
     TimeSeriesTransformations v_1({ 1 }, { 1 });
 
-    double price_1;
-    std::string date_1;
+    double price_1 = 0.0;
 
-    EXPECT_FALSE(v_1.findGreatestIncrements(&date_1, &price_1));
+    EXPECT_FALSE(v_1.findGreatestIncrements(&price_1));
     EXPECT_TRUE(std::isnan(price_1));
-    EXPECT_EQ(date_1, "");
 }
 
 TEST(TimeSeriesTransformations, countDataRowsLoadedInExaminationFile) {

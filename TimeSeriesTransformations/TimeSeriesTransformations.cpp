@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include "TimeSeriesTransformations.h"
 
 // Helper functions.
@@ -19,7 +20,7 @@ std::vector<double> vectorDiff(const std::vector<double>& v) {
     std::vector<double> diff(v.size() - 1);
 
     for (int i = 0; i < v.size() - 1; i++) {
-        diff[i] = v[(int64_t)(i)+1] - v[i];
+        diff[i] = v[i+1] - v[i];
     }
 
     return diff;
@@ -60,7 +61,7 @@ std::string unixEpochToString(const int input_time) {
 }
 
 // Check if a date is valid.
-bool IsDateValid(const std::string& date) {
+bool isDateValid(const std::string& date) {
     int unix_epoch;
     stringDateToUnix(date, &unix_epoch);
 
@@ -115,89 +116,69 @@ TimeSeriesTransformations::TimeSeriesTransformations(const std::string& filename
         int time = std::stoi(string_time);
         double price = std::round(std::stod(string_price) * power_of_10) / power_of_10;
 
-        internal_set.insert({ time, price });
+        timePricePairs.emplace_back( time, price );
     }
 
-    for (auto const &pair : internal_set) {
-        time_vector.push_back(pair.first);
-        price_vector.push_back(pair.second);
-    }
-
-    // Sanity check.
-    if (price_vector.size() != time_vector.size()) {
-        throw std::runtime_error("Unable to read csv at " + filenameandpath + ". Columns are not equal in length.");
-    }
+    sortInternals();
 }
 
 // Constructor from std::vector inputs directly.
-TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& time, const std::vector<double>& price, std::string name) : name(name) {
+TimeSeriesTransformations::TimeSeriesTransformations(const std::vector<int>& time, const std::vector<double>& price, const std::string& name) : name(name) {
     if (time.size() != price.size()) {
         throw std::runtime_error("Price and time vectors are not equally sized.");
     }
 
     for (int i = 0; i < price.size(); i++) {
-        internal_set.insert({ time[i], price[i] });
+        timePricePairs.emplace_back( time[i], price[i] );
     }
 
-    for (auto const& pair : internal_set) {
-        time_vector.push_back(pair.first);
-        price_vector.push_back(pair.second);
-    }
+    sortInternals();
 }
 
 // Copy constructor.
-TimeSeriesTransformations::TimeSeriesTransformations(const TimeSeriesTransformations& t) {
-    name = t.getName();
-    separator = t.getSeparator();
-
-    for (const auto& [time, price] : t.getInternalSet()) {
-        internal_set.insert({ time, price });
-    }
-
-    for (auto const& pair : internal_set) {
-        time_vector.push_back(pair.first);
-        price_vector.push_back(pair.second);
-    }
+TimeSeriesTransformations::TimeSeriesTransformations(const TimeSeriesTransformations& TSSObject) {
+    name = TSSObject.getName();
+    separator = TSSObject.getSeparator();
+    timePricePairs = TSSObject.getTimePricePairs();
 }
 
 // Assignment Operator.
-TimeSeriesTransformations& TimeSeriesTransformations::operator=(const TimeSeriesTransformations& t) {
-    this->name = t.getName();
-    this->separator = t.getSeparator();
-    this->price_vector = t.getPriceVector();
-    this->time_vector = t.getTimeVector();
-    this->internal_set = t.getInternalSet();
+TimeSeriesTransformations& TimeSeriesTransformations::operator=(const TimeSeriesTransformations& TSSObject) {
+    this->name = TSSObject.getName();
+    this->separator = TSSObject.getSeparator();
+    this->timePricePairs = TSSObject.getTimePricePairs();
 
     return (*this);
 }
 
 // Equality Operator.
-bool TimeSeriesTransformations::operator==(const TimeSeriesTransformations& t) const {
-    // Because of && if (t.time == time) is false then (t.price == price) will not be evaluated. Saves time.
-    // It is also better that (t.time == time) is evaluated first since integer comparison is faster than float comparison (though very minor).
-    bool names_equal = (name == t.getName());
-    bool separator_equal = (separator == t.getSeparator());
-    bool time_and_price_equal = (internal_set == t.getInternalSet());
+bool TimeSeriesTransformations::operator==(const TimeSeriesTransformations& TSSObject) const {
+    bool names_equal = (name == TSSObject.getName());
+    bool separator_equal = (separator == TSSObject.getSeparator());
+    bool time_and_price_equal = (timePricePairs == TSSObject.getTimePricePairs());
     return (names_equal && separator_equal && time_and_price_equal);
 }
 
 // Calculate mean of price.
 bool TimeSeriesTransformations::mean(double* meanValue) const {
-    if ((price_vector.size() == 0) || (time_vector.size() == 0)) {
+    if (timePricePairs.empty()) {
         *meanValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
 
-    double sum = std::accumulate(price_vector.begin(), price_vector.end(), 0.0);
+    double sum = 0.0;
+    for(const auto& pair : timePricePairs) {
+        sum += pair.second;
+    }
 
-    *meanValue = sum / price_vector.size();
+    *meanValue = sum / timePricePairs.size();
 
     return true;
 }
 
 // Calculate SD of price.
 bool TimeSeriesTransformations::standardDeviation(double* standardDeviationValue) const {
-    if ((price_vector.size() == 0) || (time_vector.size() == 0)) {
+    if (timePricePairs.empty()) {
         *standardDeviationValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
@@ -205,28 +186,29 @@ bool TimeSeriesTransformations::standardDeviation(double* standardDeviationValue
     double mean_val;
     this->mean(&mean_val);
 
-    std::vector<double> transformed_price = price_vector;
-    std::for_each(transformed_price.begin(), transformed_price.end(), [mean_val](double& i) -> void { i = pow(i - mean_val, 2); });
+    std::vector<double> transformed_price = getPriceVector();
+    std::for_each(transformed_price.begin(), transformed_price.end(), [&](double& i) -> void { i = pow(i - mean_val, 2); });
 
-    if (price_vector.size() == 0) { return 0; }
+    if (timePricePairs.empty()) { return 0; }
 
-    double sum = std::accumulate(transformed_price.begin(), transformed_price.end(), 0.0);
+    double sum = std::reduce(transformed_price.begin(), transformed_price.end(), 0.0);
 
-    *standardDeviationValue = std::sqrt((1.0 / static_cast<double>(price_vector.size() - 1))*sum);
+    *standardDeviationValue = std::sqrt((1.0 / static_cast<double>(timePricePairs.size() - 1)) * sum);
 
     return true;
 }
 
 // Calculate mean of diff of price.
 bool TimeSeriesTransformations::computeIncrementMean(double* meanValue) const {
-    if (internal_set.size() <= 1) {
+    if (timePricePairs.size() <= 1) {
         *meanValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
 
-    std::vector<double> diff = vectorDiff(price_vector);
+    std::vector<double> priceVector = getPriceVector();
+    std::vector<double> diff = vectorDiff(priceVector);
 
-    std::vector<int> time_index(price_vector.size() - 1);
+    std::vector<int> time_index(priceVector.size() - 1);
     std::iota(time_index.begin(), time_index.end(), 0);
 
     TimeSeriesTransformations ts(time_index, diff);
@@ -235,185 +217,73 @@ bool TimeSeriesTransformations::computeIncrementMean(double* meanValue) const {
 
 // Calculate SD of diff of price.
 bool TimeSeriesTransformations::computeIncrementStandardDeviation(double* standardDeviationValue) const {
-    if (internal_set.size() <= 1) {
+    if (timePricePairs.size() <= 1) {
         *standardDeviationValue = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
 
-    std::vector<double> diff = vectorDiff(price_vector);
+    std::vector<double> priceVector = getPriceVector();
+    std::vector<double> diff = vectorDiff(priceVector);
 
-    std::vector<int> time_index(price_vector.size() - 1);
-    std::iota(time_index.begin(), time_index.end(), 0);
+    std::vector<int> timeIndex(priceVector.size() - 1);
+    std::iota(timeIndex.begin(), timeIndex.end(), 0);
 
-    TimeSeriesTransformations ts(time_index, diff);
+    TimeSeriesTransformations ts(timeIndex, diff);
     return ts.standardDeviation(standardDeviationValue);
 }
 
-void TimeSeriesTransformations::addASharePrice(std::string datetime, double price) {
+void TimeSeriesTransformations::addASharePrice(const std::string& datetime, double price) {
     int unix_epoch_time;
-    if ((!stringDateToUnix(datetime, &unix_epoch_time)) || !IsDateValid(datetime)) {
+    if ((!stringDateToUnix(datetime, &unix_epoch_time)) || !isDateValid(datetime)) {
         throw std::invalid_argument("Date " + datetime + " cannot be parsed.");
     }
-
-    double power_of_10 = std::pow(10, decimalPlaces);
-    internal_set.insert({ unix_epoch_time, std::round(price * power_of_10) / power_of_10 });
-
-    // Vector objects must be re-allocated because of new elements in the set.
-    price_vector.clear();
-    time_vector.clear();
-
-    for (auto const& pair : internal_set) {
-        time_vector.push_back(pair.first);
-        price_vector.push_back(pair.second);
-    }
+    
+    timePricePairs.emplace_back(unix_epoch_time, price);
+    sortInternals();
 }
 
-bool TimeSeriesTransformations::removeEntryAtTime(std::string time) {
-    int unix_epoch_time;
-    if ((!stringDateToUnix(time, &unix_epoch_time)) || !IsDateValid(time)) {
+bool TimeSeriesTransformations::removeEntryAtTime(const std::string& time) {
+    int unixEpochTime;
+    if ((!stringDateToUnix(time, &unixEpochTime)) || !isDateValid(time)) {
         return false;
     }
 
-    std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-    bool is_element_removed = false;
-
-    // Vector objects must be re-allocated because of new elements in the set.
-    price_vector.clear();
-    time_vector.clear();
-
-    // Iterate through the set and find the element to erase.
-    for (auto const& pair : internal_set) {
-        if (pair.first != unix_epoch_time) {
-            time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second);
-            tmp_internal_set.insert({pair.first, pair.second});
-        } else {
-            is_element_removed = true;
-        }
-    }
-
-    internal_set = tmp_internal_set;
-    tmp_internal_set.clear();
-
-    return is_element_removed;
+    return std::erase_if(timePricePairs, [unixEpochTime](const auto& pair) { return (pair.first == unixEpochTime); });
 }
 
-bool TimeSeriesTransformations::removePricesGreaterThan(double price) {
-    std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-    bool is_element_removed = false;
-
-    price_vector.clear();
-    time_vector.clear();
-
-    for (auto const& pair : internal_set) {
-        if (pair.second <= price) {
-            tmp_internal_set.insert({ pair.first, pair.second });
-
-            time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second);
-        } else {
-            is_element_removed = true;
-        }
-    }
-
-    internal_set = tmp_internal_set;
-    tmp_internal_set.clear();
-
-    // I see no real reason this should fail, even if no elements actually match the condition.
-    return is_element_removed;
-}
-
-bool TimeSeriesTransformations::removePricesLowerThan(double price) {
-    std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-    bool is_element_removed = false;
-
-    price_vector.clear();
-    time_vector.clear();
-
-    for (auto const& pair : internal_set) {
-        if (price <= pair.second) {
-            tmp_internal_set.insert({ pair.first, pair.second });
-
-            time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second);
-        } else {
-            is_element_removed = true;
-        }
-    }
-
-    internal_set = tmp_internal_set;
-    tmp_internal_set.clear();
-
-    return is_element_removed;
-}
-
-bool TimeSeriesTransformations::removePricesBefore(std::string date) {
-    int unix_epoch_time;
-    if ((!stringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+bool TimeSeriesTransformations::removePricesBefore(const std::string& date) {
+    int unixEpochTime;
+    if ((!stringDateToUnix(date, &unixEpochTime)) || !isDateValid(date)) {
         return false;
     }
-
-    std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-    bool is_element_removed = false;
-
-    price_vector.clear();
-    time_vector.clear();
-
-    for (auto const& pair : internal_set) {
-        if (unix_epoch_time <= pair.first) {
-            tmp_internal_set.insert({ pair.first, pair.second });
-
-            time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second);
-        } else {
-            is_element_removed = true;
-        }
-    }
-
-    internal_set = tmp_internal_set;
-    tmp_internal_set.clear();
-
-    return is_element_removed;
+    return std::erase_if(timePricePairs, [unixEpochTime](const auto& pair) { return (pair.first < unixEpochTime); });
 }
 
-bool TimeSeriesTransformations::removePricesAfter(std::string date) {
-    int unix_epoch_time;
-    if ((!stringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+bool TimeSeriesTransformations::removePricesGreaterThan(double priceCondition) {
+    return std::erase_if(timePricePairs, [priceCondition](const auto& pair) { return (pair.second > priceCondition); });
+}
+
+bool TimeSeriesTransformations::removePricesLowerThan(double priceCondition) {
+    return std::erase_if(timePricePairs, [priceCondition](const auto& pair) { return (pair.second < priceCondition); });
+}
+
+bool TimeSeriesTransformations::removePricesAfter(const std::string& date) {
+    int unixEpochTime;
+    if ((!stringDateToUnix(date, &unixEpochTime)) || !isDateValid(date)) {
         return false;
     }
-
-    std::set<std::pair<int, double>, sorting_struct> tmp_internal_set;
-    bool is_element_removed = false;
-
-    price_vector.clear();
-    time_vector.clear();
-
-    for (auto const& pair : internal_set) {
-        if (unix_epoch_time >= pair.first) {
-            tmp_internal_set.insert({ pair.first, pair.second });
-
-            time_vector.push_back(pair.first);
-            price_vector.push_back(pair.second);
-        } else {
-            is_element_removed = true;
-        }
-    }
-
-    internal_set = tmp_internal_set;
-    tmp_internal_set.clear();
-
-    return is_element_removed;
+    return std::erase_if(timePricePairs, [unixEpochTime](const auto& pair) { return (pair.first > unixEpochTime); });
 }
 
-std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) const {
+std::string TimeSeriesTransformations::printSharePricesOnDate(const std::string& date) const {
     std::string truncated_date = std::string(date.begin(), date.begin() + 10);
     int unix_epoch_time;
     // I'm deliberately leaving IsDateValid with date so it will still error if you put in an invalid date.
-    if ((!stringDateToUnix(truncated_date, &unix_epoch_time)) || !IsDateValid(date)) {
+    if ((!stringDateToUnix(truncated_date, &unix_epoch_time)) || !isDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
     }
 
-    TimeSeriesTransformations v(this->time_vector, this->price_vector);
+    TimeSeriesTransformations v(getTimeVector(), getPriceVector());
 
     v.removePricesBefore(date);
 
@@ -422,21 +292,21 @@ std::string TimeSeriesTransformations::printSharePricesOnDate(std::string date) 
 
     std::string string_of_prices = "";
 
-    for (auto const i : v.price_vector) {
+    for (auto const i : v.getPriceVector()) {
         string_of_prices += std::to_string(i) + "\n";
     }
 
     return string_of_prices;
 }
 
-bool TimeSeriesTransformations::getPriceAtDate(const std::string date, double* value) const {
+bool TimeSeriesTransformations::getPriceAtDate(const std::string& date, double* value) const {
     int unix_epoch_time;
-    if ((!stringDateToUnix(date, &unix_epoch_time)) || !IsDateValid(date)) {
+    if ((!stringDateToUnix(date, &unix_epoch_time)) || !isDateValid(date)) {
         *value = std::numeric_limits<double>::quiet_NaN();
         return false;
     }
 
-    for (auto const pair : internal_set) {
+    for (auto const& pair : timePricePairs) {
         if (pair.first == unix_epoch_time) {*value = pair.second; return true; }
     }
 
@@ -444,15 +314,15 @@ bool TimeSeriesTransformations::getPriceAtDate(const std::string date, double* v
     return false;
 }
 
-std::string TimeSeriesTransformations::printIncrementsOnDate(std::string date) const {
-    if (!IsDateValid(date)) {
+std::string TimeSeriesTransformations::printIncrementsOnDate(const std::string& date) const {
+    if (!isDateValid(date)) {
         throw std::invalid_argument("Date " + date + " cannot be parsed.");
     }
 
-    if (price_vector.size() <= 1) { return ""; }
+    if (timePricePairs.size() <= 1) { return ""; }
 
-    std::vector<double> price_vector_diff = vectorDiff(price_vector);
-    std::vector<int> time_vector_diff = time_vector;
+    std::vector<double> price_vector_diff = vectorDiff(getPriceVector());
+    std::vector<int> time_vector_diff = getTimeVector();
     time_vector_diff.erase(time_vector_diff.begin());
 
     TimeSeriesTransformations v(time_vector_diff, price_vector_diff);
@@ -460,23 +330,15 @@ std::string TimeSeriesTransformations::printIncrementsOnDate(std::string date) c
     return v.printSharePricesOnDate(date);
 }
 
-bool TimeSeriesTransformations::findGreatestIncrements(std::string* date, double* price_increment) const {
-    if (internal_set.size() <= 1) {
+bool TimeSeriesTransformations::findGreatestIncrements(double* price_increment) const {
+    if (timePricePairs.size() <= 1) {
         *price_increment = std::numeric_limits<double>::quiet_NaN();
-        *date = "";
         return false;
     }
 
-    std::vector<double> increments = vectorDiff(price_vector);
-    std::vector<std::pair<int, double>> tmp_vector;
+    std::vector<double> increments = vectorDiff(getPriceVector());
 
-    for (int i = 0; i < increments.size(); i++) {
-        tmp_vector.push_back({time_vector[(int64_t)(i)+1], increments[i]});
-    }
-
-    auto pair = *std::max_element(tmp_vector.begin(), tmp_vector.begin(), [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
-    *date = unixEpochToString(pair.first);
-    *price_increment = pair.second;
+    *price_increment = *std::max_element(increments.begin(), increments.end());
     return true;
 }
 
@@ -484,15 +346,26 @@ std::string TimeSeriesTransformations::getName() const {
     return name;
 }
 
-int TimeSeriesTransformations::count() const {
-    return static_cast<int>(internal_set.size());
+void TimeSeriesTransformations::sortInternals() {
+    std::sort(timePricePairs.begin(), timePricePairs.end(), [](auto& left, auto& right) {
+        return left.first < right.first;
+    });
 }
 
-char TimeSeriesTransformations::getSeparator() const {
+std::vector<std::pair<int, double>> TimeSeriesTransformations::getTimePricePairs() const noexcept {
+    return timePricePairs;
+}
+
+size_t TimeSeriesTransformations::count() const noexcept {
+    return timePricePairs.size();
+}
+
+char TimeSeriesTransformations::getSeparator() const noexcept {
     return separator;
 }
 
-void TimeSeriesTransformations::saveData(std::string filename) const {
+void TimeSeriesTransformations::saveData(const std::string& filename) const 
+{
     std::ofstream new_csv;
 
     new_csv.open(filename);
@@ -501,7 +374,7 @@ void TimeSeriesTransformations::saveData(std::string filename) const {
         // Adds header to csv.
         new_csv << "TIMESTAMP" << this->getSeparator() << name << std::endl;
 
-        for (const auto& pair : internal_set) {
+        for (const auto& pair : timePricePairs) {
             new_csv << pair.first << separator << pair.second << std::endl;
         }
         new_csv.close();
@@ -509,13 +382,22 @@ void TimeSeriesTransformations::saveData(std::string filename) const {
 }
 
 std::vector<double> TimeSeriesTransformations::getPriceVector() const {
-    return price_vector;
+    
+    std::vector<double> priceVec{};
+
+    for (const auto& element : timePricePairs) {
+        priceVec.push_back(element.second);
+    }
+    
+    return priceVec;
 }
 
 std::vector<int> TimeSeriesTransformations::getTimeVector() const {
-    return time_vector;
-}
+    std::vector<int> timeVec{};
 
-std::set<std::pair<int, double>, sorting_struct> TimeSeriesTransformations::getInternalSet() const {
-    return internal_set;
+    for (const auto& element : timePricePairs) {
+        timeVec.push_back(element.first);
+    }
+
+    return timeVec;
 }
